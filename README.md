@@ -35,8 +35,8 @@ Para baixar do repositorio e compilar siga os seguintes passos: </br>
 
 1. Crie uma pasta local em seu computador com o nome JogoPIF conforme exemplo abaixo:
 
-   ```mkdir JogoPIF<br>
-   cd JogoPIF<br>```
+   mkdir JogoPIF
+   cd JogoPIF
    
 2. Faça um clone deste repositório com o seguinte comando:
 
