@@ -90,8 +90,10 @@ int checkCollision(Snake *snake, Food *food) {
     }
     if (snake->position[0].x == food->position.x && snake->position[0].y == food->position.y) {
         snake->size++;
-        food->position.x = rand() % WIDTH;
-        food->position.y = rand() % HEIGHT;
+        do {
+            food->position.x = rand() % (WIDTH - 2) + 1;
+            food->position.y = rand() % (HEIGHT - 2) + 1;
+        } while (food->position.x == snake->position[0].x && food->position.y == snake->position[0].y);
     }
     return 0;
 }
@@ -110,21 +112,18 @@ int main() {
     initGame(&snake, &food);
 
     while (!gameOver) {
-        printBoard(&snake, &food);
-        updatePosition(&snake);
-        gameOver = checkCollision(&snake, &food);
-
         if (keyhit()) {
             tecla = readch();
-            if ((tecla == 'w' && snake.direction != 'D') ||
-                (tecla == 's' && snake.direction != 'U') ||
-                (tecla == 'a' && snake.direction != 'R') ||
-                (tecla == 'd' && snake.direction != 'L')) {
-                snake.direction = tecla;
-            } else if (tecla == 'f') {
-                break; 
-            }
+            if (tecla == 'w' && snake.direction != 'D') snake.direction = 'U';
+            else if (tecla == 's' && snake.direction != 'U') snake.direction = 'D';
+            else if (tecla == 'a' && snake.direction != 'R') snake.direction = 'L';
+            else if (tecla == 'd' && snake.direction != 'L') snake.direction = 'R';
+            else if (tecla == 'f') break;
         }
+
+        updatePosition(&snake);
+        gameOver = checkCollision(&snake, &food);
+        printBoard(&snake, &food);
 
         timerInit(600 - (snake.size * 10 > 400 ? 400 : snake.size * 10));
         while (timerTimeOver() != 1);
