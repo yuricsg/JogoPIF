@@ -177,5 +177,3 @@ void screenGotoxy(int x, int y);
  * @param bg background color, can assume values from BLACK to LIGHTGRAY
 */
 void screenSetColor(screenColor fg, screenColor bg);
-
-#endif /* __SCREEN_H__ */
