@@ -29,3 +29,25 @@ Para construir o jogo, podemos dividir o código em partes simples para facilita
 
 
 4. Pontuação e Crescimento: Toda vez que a cobra come uma fruta, somamos pontos e aumentamos o comprimento dela. No fim, a pontuação mostra o quão longe o jogador conseguiu chegar.
+
+<br>
+Para baixar do repositorio e compilar siga os seguintes passos: </br>
+
+1. Crie uma pasta local em seu computador com o nome JogoPIF conforme exemplo abaixo:
+
+   mkdir JogoPIF<br>
+   cd JogoPIF<br>
+   
+2. Faça um clone deste repositório com o seguinte comando:
+
+   git clone https://github.com/yuricsg/JogoPIF.git .
+
+3. Compile o jogo usnado este comando:
+
+   gcc source/*.c -I include/ -o jogo
+
+4. Execute o programa executando o comando:
+
+   ./jogo
+
+   
