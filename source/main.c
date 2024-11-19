@@ -16,7 +16,7 @@ typedef struct {
 typedef struct {
     Position position[100]; 
     int size;
-    int direction;
+    char direction;
 } Snake;
 
 typedef struct {
@@ -24,18 +24,18 @@ typedef struct {
 } Food;
 
 void initGame(Snake *snake, Food *food) {
-    snake-> size = 1;  
-    snake-> position[0].x = WIDTH / 2;
-    snake-> position[0].y = HEIGHT / 2;
-    snake-> direction = 'R'; 
+    snake->size = 1;  
+    snake->position[0].x = WIDTH / 2;
+    snake->position[0].y = HEIGHT / 2;
+    snake->direction = 'R'; 
 
-    srand(time(0));
+    // srand(time(0));
     food->position.x = rand() % WIDTH;
     food->position.y = rand() % HEIGHT;
 }
 
 void printBoard(Snake *snake, Food *food) {
-    system("clear"); 
+    screenClear(); 
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
             if (i == 0 || i == HEIGHT - 1 || j == 0 || j == WIDTH - 1) {
@@ -98,6 +98,11 @@ int main() {
     Snake snake;
     Food food;
     int gameOver = 0;
+    char tecla = 0;
+
+    keyboardInit();
+    screenInit(1);
+    timerInit(50);
 
     initGame(&snake, &food);
 
@@ -106,19 +111,25 @@ int main() {
         updatePosition(&snake);
         gameOver = checkCollision(&snake, &food);
 
-        if (_kbhit()) {
-            switch (_getch()) {
-                case 'w': snake.direction = 'U'; break;
-                case 's': snake.direction = 'D'; break;
-                case 'a': snake.direction = 'L'; break;
-                case 'd': snake.direction = 'R'; break;
-            }
+
+        if (keyhit()) {
+            tecla = readch();
+            printf("%c", tecla);
+            if (tecla == 'w') snake.direction = 'U';
+            else if (tecla == 's') snake.direction = 'D';
+            else if (tecla == 'a') snake.direction = 'L';
+            else if (tecla == 'd') snake.direction = 'R';
         }
 
-        usleep(200000); 
+        while(timerTimeOver() == 1);
+    } 
 
     printf("Game Over!\n");
+
+    screenDestroy();
+    keyboardDestroy();
+    timerDestroy();
+
     return 0;
 }
 
-}
