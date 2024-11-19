@@ -39,15 +39,15 @@ Para baixar do repositorio e compilar siga os seguintes passos: </br>
    cd JogoPIF
    ```
 2. Faça um clone deste repositório com o seguinte comando:
-
+   ```bash
    git clone https://github.com/yuricsg/JogoPIF.git .
-
+   ```
 3. Compile o jogo usnado este comando:
-
+   ```bash
    gcc source/*.c -I include/ -o jogo
-
+   ```
 4. Execute o programa executando o comando:
-
+   ```bash
    ./jogo
-
+   ```
    
