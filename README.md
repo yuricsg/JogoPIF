@@ -34,10 +34,10 @@ Para construir o jogo, podemos dividir o código em partes simples para facilita
 Para baixar do repositorio e compilar siga os seguintes passos: </br>
 
 1. Crie uma pasta local em seu computador com o nome JogoPIF conforme exemplo abaixo:
-
+   ```bash
    mkdir JogoPIF
    cd JogoPIF
-   
+   ```
 2. Faça um clone deste repositório com o seguinte comando:
 
    git clone https://github.com/yuricsg/JogoPIF.git .
