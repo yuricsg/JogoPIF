@@ -102,7 +102,7 @@ int main() {
 
     keyboardInit();
     screenInit(1);
-    timerInit(600);
+    timerInit(600); // timer de 600 milessegundos
 
     initGame(&snake, &food);
 
