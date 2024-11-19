@@ -29,7 +29,7 @@ void initGame(Snake *snake, Food *food) {
     snake->position[0].y = HEIGHT / 2;
     snake->direction = 'R'; 
 
-    // srand(time(0));
+    srand(time(0));
     food->position.x = rand() % WIDTH;
     food->position.y = rand() % HEIGHT;
 }
@@ -102,7 +102,7 @@ int main() {
 
     keyboardInit();
     screenInit(1);
-    timerInit(50);
+    timerInit(600);
 
     initGame(&snake, &food);
 
@@ -111,7 +111,6 @@ int main() {
         updatePosition(&snake);
         gameOver = checkCollision(&snake, &food);
 
-
         if (keyhit()) {
             tecla = readch();
             printf("%c", tecla);
@@ -119,9 +118,10 @@ int main() {
             else if (tecla == 's') snake.direction = 'D';
             else if (tecla == 'a') snake.direction = 'L';
             else if (tecla == 'd') snake.direction = 'R';
+            else if (tecla == 'f') break;
         }
 
-        while(timerTimeOver() == 1);
+        while(timerTimeOver() != 1);
     } 
 
     printf("Game Over!\n");
