@@ -30,12 +30,16 @@ void initGame(Snake *snake, Food *food) {
     snake->direction = 'R'; 
 
     srand(time(0));
-    food->position.x = rand() % WIDTH;
-    food->position.y = rand() % HEIGHT;
+    do {
+        food->position.x = rand() % (WIDTH - 2) + 1; 
+        food->position.y = rand() % (HEIGHT - 2) + 1;
+    } while (food->position.x == snake->position[0].x && 
+             food->position.y == snake->position[0].y);
 }
 
 void printBoard(Snake *snake, Food *food) {
     screenClear(); 
+    printf("Score: %d\n", snake->size - 1);
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
             if (i == 0 || i == HEIGHT - 1 || j == 0 || j == WIDTH - 1) {
@@ -61,17 +65,15 @@ void printBoard(Snake *snake, Food *food) {
 }
 
 void updatePosition(Snake *snake) {
-    // Atualiza a posição dos segmentos de trás para frente
     for (int i = snake->size - 1; i > 0; i--) {
         snake->position[i] = snake->position[i - 1];
     }
 
-    // Atualiza a direção da cabeça
     switch (snake->direction) {
-        case 'U': snake->position[0].y--; break; // Up
-        case 'D': snake->position[0].y++; break; // Down
-        case 'L': snake->position[0].x--; break; // Left
-        case 'R': snake->position[0].x++; break; // Right
+        case 'U': snake->position[0].y--; break; 
+        case 'D': snake->position[0].y++; break; 
+        case 'L': snake->position[0].x--; break; 
+        case 'R': snake->position[0].x++; break; 
     }
 }
 
@@ -102,7 +104,8 @@ int main() {
 
     keyboardInit();
     screenInit(1);
-    timerInit(600); // timer de 600 milessegundos
+    printf("Bem-vindo ao Snake!\nUse W/A/S/D para mover.\nPressione 'f' para sair.\nPressione qualquer tecla para começar...\n");
+    getchar(); 
 
     initGame(&snake, &food);
 
@@ -113,18 +116,21 @@ int main() {
 
         if (keyhit()) {
             tecla = readch();
-            printf("%c", tecla);
-            if (tecla == 'w') snake.direction = 'U';
-            else if (tecla == 's') snake.direction = 'D';
-            else if (tecla == 'a') snake.direction = 'L';
-            else if (tecla == 'd') snake.direction = 'R';
-            else if (tecla == 'f') break;
+            if ((tecla == 'w' && snake.direction != 'D') ||
+                (tecla == 's' && snake.direction != 'U') ||
+                (tecla == 'a' && snake.direction != 'R') ||
+                (tecla == 'd' && snake.direction != 'L')) {
+                snake.direction = tecla;
+            } else if (tecla == 'f') {
+                break; 
+            }
         }
 
-        while(timerTimeOver() != 1);
+        timerInit(600 - (snake.size * 10 > 400 ? 400 : snake.size * 10));
+        while (timerTimeOver() != 1);
     } 
 
-    printf("Game Over!\n");
+    printf("Game Over!\nFinal Score: %d\n", snake.size - 1);
 
     screenDestroy();
     keyboardDestroy();
@@ -132,4 +138,3 @@ int main() {
 
     return 0;
 }
-
