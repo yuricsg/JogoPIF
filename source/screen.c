@@ -1,4 +1,4 @@
-**
+/**
  * screen.c
  * Created on Aug, 23th 2023
  * Author: Tiago Barros
@@ -50,6 +50,7 @@ void screenDrawBorders()
 
 void screenInit(int drawBorders)
 {
+    screenUpdate();
     screenClear();
     if (drawBorders) screenDrawBorders();
     screenHomeCursor();
