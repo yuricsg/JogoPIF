@@ -1,13 +1,9 @@
-#include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
-
-#include "screen.h"
-#include "keyboard.h"
-#include "timer.h"
-#include "timer.c"
-#include "screen.c"
-#include "keyboard.c"
+#include <stdlib.h>
+#include <time.h>
+#include <keyboard.h>
+#include <screen.h>
+#include <timer.h>
 
 #define WIDTH 20
 #define HEIGHT 20
