@@ -1,68 +1,55 @@
 /**
- * keyboard.h
+ * timer.c
  * Created on Aug, 23th 2023
  * Author: Tiago Barros
  * Based on "From C to C++ course - 2002"
 */
 
-#include <termios.h>
-#include <unistd.h>
+#include "timer.h"
+#include <sys/time.h>
+#include <stdio.h>
 
-#include "keyboard.h"
+static struct timeval timer, now;
+static int delay = -1;
 
-static struct termios initialSettings, newSettings;
-static int peekCharacter;
-
-
-void keyboardInit()
+void timerInit(int valueMilliSec)
 {
-    tcgetattr(0,&initialSettings);
-    newSettings = initialSettings;
-    newSettings.c_lflag &= ~ICANON;
-    newSettings.c_lflag &= ~ECHO;
-    newSettings.c_lflag &= ~ISIG;
-    newSettings.c_cc[VMIN] = 1;
-    newSettings.c_cc[VTIME] = 0;
-    tcsetattr(0, TCSANOW, &newSettings);
+    delay = valueMilliSec;
+    gettimeofday(&timer, NULL);
 }
 
-void keyboardDestroy()
+void timerDestroy()
 {
-    tcsetattr(0, TCSANOW, &initialSettings);
+    delay = -1;
 }
 
-int keyhit()
+void timerUpdateTimer(int valueMilliSec)
 {
-    unsigned char ch;
-    int nread;
+    delay = valueMilliSec;
+    gettimeofday(&timer, NULL);
+}
 
-    if (peekCharacter != -1) return 1;
-    
-    newSettings.c_cc[VMIN]=0;
-    tcsetattr(0, TCSANOW, &newSettings);
-    nread = read(0,&ch,1);
-    newSettings.c_cc[VMIN]=1;
-    tcsetattr(0, TCSANOW, &newSettings);
-    
-    if(nread == 1) 
+int getTimeDiff()
+{
+    gettimeofday(&now, NULL);
+    long diff = (((now.tv_sec - timer.tv_sec) * 1000000) + now.tv_usec - timer.tv_usec)/1000;
+    return (int) diff;
+}
+
+int timerTimeOver()
+{
+    int ret = 0;
+
+    if (getTimeDiff() > delay)
     {
-        peekCharacter = ch;
-        return 1;
+        ret = 1;
+        gettimeofday(&timer, NULL);
     }
-    
-    return 0;
+
+    return ret;
 }
 
-int readch()
+void timerPrint()
 {
-    char ch;
-
-    if(peekCharacter != -1)
-    {
-        ch = peekCharacter;
-        peekCharacter = -1;
-        return ch;
-    }
-    read(0,&ch,1);
-    return ch;
+    printf("Timer:  %d", getTimeDiff());
 }
