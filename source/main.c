@@ -5,16 +5,18 @@
 #include <screen.h>
 #include <timer.h>
 
-#define WIDTH 20
-#define HEIGHT 20
+#define WIDTH 30
+#define HEIGHT 15
+#define SNAKE_CHAR 'O'
+#define FOOD_CHAR '&'
+#define WALL_CHAR '#'
 
 typedef struct {
-    int x;
-    int y;
+    int x, y;
 } Position;
 
 typedef struct {
-    Position position[100]; 
+    Position *body;  // Agora, um ponteiro para uma posição dinâmica
     int size;
     char direction;
 } Snake;
@@ -23,36 +25,35 @@ typedef struct {
     Position position;
 } Food;
 
-void initGame(Snake *snake, Food *food) {
-    snake->size = 1;  
-    snake->position[0].x = WIDTH / 2;
-    snake->position[0].y = HEIGHT / 2;
-    snake->direction = 'R'; 
+void initialize(Snake *snake, Food *food) {
+    snake->size = 1;
+    snake->body = (Position *)malloc(sizeof(Position));  // Alocando memória para a cabeça da cobra
+    snake->body[0].x = WIDTH / 2;
+    snake->body[0].y = HEIGHT / 2;
+    snake->direction = 'R';
 
     srand(time(0));
-    do {
-        food->position.x = rand() % (WIDTH - 2) + 1; 
-        food->position.y = rand() % (HEIGHT - 2) + 1;
-    } while (food->position.x == snake->position[0].x && 
-             food->position.y == snake->position[0].y);
+    food->position.x = 1 + rand() % (WIDTH - 2);
+    food->position.y = 1 + rand() % (HEIGHT - 2);
 }
 
-void printBoard(Snake *snake, Food *food) {
-    screenClear(); 
-    printf("Score: %d\n", snake->size - 1);
-    for (int i = 0; i < HEIGHT; i++) {
-        for (int j = 0; j < WIDTH; j++) {
-            if (i == 0 || i == HEIGHT - 1 || j == 0 || j == WIDTH - 1) {
-                printf("#"); 
-            } else if (i == snake->position[0].y && j == snake->position[0].x) {
-                printf("O"); 
-            } else if (i == food->position.y && j == food->position.x) {
-                printf("F"); 
+
+// Desenha a tela com bordas, cobra e comida
+void renderGame(const Snake *snake, const Food *food) {
+    screenClear();
+    for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
+            if (x == 0 || x == WIDTH - 1 || y == 0 || y == HEIGHT - 1) {
+                printf("%c", WALL_CHAR); // Bordas
+            } else if (x == snake->body[0].x && y == snake->body[0].y) {
+                printf("%c", SNAKE_CHAR); // Cabeça da cobra
+            } else if (x == food->position.x && y == food->position.y) {
+                printf("%c", FOOD_CHAR); // Comida
             } else {
                 int isBody = 0;
-                for (int k = 1; k < snake->size; k++) {
-                    if (i == snake->position[k].y && j == snake->position[k].x) {
-                        printf("o");
+                for (int i = 1; i < snake->size; i++) {
+                    if (x == snake->body[i].x && y == snake->body[i].y) {
+                        printf("%c", SNAKE_CHAR); // Corpo da cobra
                         isBody = 1;
                         break;
                     }
@@ -64,75 +65,90 @@ void printBoard(Snake *snake, Food *food) {
     }
 }
 
-void updatePosition(Snake *snake) {
+// Atualiza a posição da cobra com base na direção
+void moveSnake(Snake *snake) {
     for (int i = snake->size - 1; i > 0; i--) {
-        snake->position[i] = snake->position[i - 1];
+        snake->body[i] = snake->body[i - 1];
     }
 
     switch (snake->direction) {
-        case 'U': snake->position[0].y--; break; 
-        case 'D': snake->position[0].y++; break; 
-        case 'L': snake->position[0].x--; break; 
-        case 'R': snake->position[0].x++; break; 
+        case 'U': snake->body[0].y--; break;
+        case 'D': snake->body[0].y++; break;
+        case 'L': snake->body[0].x--; break;
+        case 'R': snake->body[0].x++; break;
     }
 }
 
-int checkCollision(Snake *snake, Food *food) {
-    if (snake->position[0].x == 0 || snake->position[0].x == WIDTH - 1 ||
-        snake->position[0].y == 0 || snake->position[0].y == HEIGHT - 1) {
-        return 1; 
+// Verifica colisões com paredes, corpo e comida
+int checkGameState(Snake *snake, Food *food) {
+    // Colisão com paredes
+    if (snake->body[0].x == 0 || snake->body[0].x == WIDTH - 1 ||
+        snake->body[0].y == 0 || snake->body[0].y == HEIGHT - 1) {
+        return 1; // Game Over
     }
+
+    // Colisão com o próprio corpo
     for (int i = 1; i < snake->size; i++) {
-        if (snake->position[0].x == snake->position[i].x &&
-            snake->position[0].y == snake->position[i].y) {
-            return 1; 
+        if (snake->body[0].x == snake->body[i].x &&
+            snake->body[0].y == snake->body[i].y) {
+            return 1; // Game Over
         }
     }
-    if (snake->position[0].x == food->position.x && snake->position[0].y == food->position.y) {
+
+    // Comer comida
+    if (snake->body[0].x == food->position.x && snake->body[0].y == food->position.y) {
         snake->size++;
-        do {
-            food->position.x = rand() % (WIDTH - 2) + 1;
-            food->position.y = rand() % (HEIGHT - 2) + 1;
-        } while (food->position.x == snake->position[0].x && food->position.y == snake->position[0].y);
+        food->position.x = rand() % (WIDTH - 2) + 1;
+        food->position.y = rand() % (HEIGHT - 2) + 1;
     }
-    return 0;
+
+    return 0; // Jogo continua
+}
+
+// Atualiza a direção da cobra com base na entrada do jogador
+void updateDirection(Snake *snake, char input) {
+    if ((input == 'w' && snake->direction != 'D') ||
+        (input == 's' && snake->direction != 'U') ||
+        (input == 'a' && snake->direction != 'R') ||
+        (input == 'd' && snake->direction != 'L')) {
+        snake->direction = (input == 'w') ? 'U' :
+                           (input == 's') ? 'D' :
+                           (input == 'a') ? 'L' : 'R';
+    }
 }
 
 int main() {
     Snake snake;
     Food food;
+    char ch = 0;
     int gameOver = 0;
-    char tecla = 0;
 
     keyboardInit();
     screenInit(1);
-    printf("Bem-vindo ao Snake!\nUse W/A/S/D para mover.\nPressione 'f' para sair.\nPressione qualquer tecla para começar...\n");
-    getchar(); 
+    timerInit(200);
 
-    initGame(&snake, &food);
+    printf("=== Bem-vindo ao Snake Game! ===\n");
+    printf("Use W/A/S/D para mover a cobra.\nPressione ENTER para começar.\n");
+    getchar();
 
-    while (!gameOver) {
+    initialize(&snake, &food);
+
+    while (!gameOver && ch != 10) {
         if (keyhit()) {
-            tecla = readch();
-            if (tecla == 'w' && snake.direction != 'D') snake.direction = 'U';
-            else if (tecla == 's' && snake.direction != 'U') snake.direction = 'D';
-            else if (tecla == 'a' && snake.direction != 'R') snake.direction = 'L';
-            else if (tecla == 'd' && snake.direction != 'L') snake.direction = 'R';
-            else if (tecla == 'f') break;
+            ch = readch();
+            updateDirection(&snake, ch);
         }
 
-        updatePosition(&snake);
-        gameOver = checkCollision(&snake, &food);
-        printBoard(&snake, &food);
+        if (timerTimeOver() == 1) {
+            moveSnake(&snake);
+            gameOver = checkGameState(&snake, &food);
+            renderGame(&snake, &food);
+            screenUpdate();
+        }
+    }
 
-        timerInit(600 - (snake.size * 10 > 400 ? 400 : snake.size * 10));
-        while (timerTimeOver() != 1);
-    } 
-
-    printf("Game Over!\nFinal Score: %d\n", snake.size - 1);
-
-    screenDestroy();
     keyboardDestroy();
+    screenDestroy();
     timerDestroy();
 
     return 0;
